@@ -10,10 +10,7 @@ import ru.practicum.dto.ReturnStatsDto;
 import ru.practicum.dto.SaveStatsDto;
 import ru.practicum.service.StatsServiceImpl;
 
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.List;
 
 @RestController
