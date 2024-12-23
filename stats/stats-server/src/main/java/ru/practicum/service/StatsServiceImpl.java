@@ -31,9 +31,7 @@ public class StatsServiceImpl implements StatsService {
     }
 
     @Override
-    public List<ReturnStatsDto> getStats(String startDecoded, String endDecoded, List<String> uris, boolean unique) {
-        LocalDateTime start = LocalDateTime.parse(startDecoded);
-        LocalDateTime end = LocalDateTime.parse(endDecoded);
+    public List<ReturnStatsDto> getStats(LocalDateTime start, LocalDateTime end, List<String> uris, boolean unique) {
 
         if (unique) {
             if (!uris.isEmpty()) {

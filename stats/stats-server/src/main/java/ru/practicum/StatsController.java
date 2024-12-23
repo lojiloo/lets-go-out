@@ -2,6 +2,7 @@ package ru.practicum;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -11,6 +12,7 @@ import ru.practicum.service.StatsServiceImpl;
 
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 
@@ -29,14 +31,12 @@ public class StatsController {
 
     @GetMapping(path = "/stats")
     @ResponseStatus(value = HttpStatus.OK, reason = "Статистика собрана")
-    public List<ReturnStatsDto> getStats(@RequestParam String startEncoded,
-                                         @RequestParam String endEncoded,
-                                         @RequestParam(required = false) String[] uris,
-                                         @RequestParam(defaultValue = "false") boolean unique) {
-        String startDecoded = URLDecoder.decode(startEncoded, StandardCharsets.UTF_8);
-        String endDecoded = URLDecoder.decode(endEncoded, StandardCharsets.UTF_8);
+    public List<ReturnStatsDto> getStats(@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime start,
+                                         @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime end,
+                                         @RequestParam(defaultValue = "", required = false) List<String> uris,
+                                         @RequestParam(defaultValue = "false", required = false) boolean unique) {
 
-        return service.getStats(startDecoded, endDecoded, Arrays.asList(uris), unique);
+        return service.getStats(start, end, uris, unique);
     }
 
 }
