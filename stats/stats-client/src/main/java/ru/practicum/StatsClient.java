@@ -24,12 +24,12 @@ public class StatsClient {
         this.client = WebClient.create(STATS_URI);
     }
 
-    public void saveStats(SaveStatsDto body) {
-        client.post()
+    public SaveStatsDto saveStats(SaveStatsDto body) {
+        return client.post()
                 .uri("/hit")
                 .contentType(MediaType.APPLICATION_JSON)
                 .retrieve()
-                .toBodilessEntity()
+                .bodyToMono(SaveStatsDto.class)
                 .block();
     }
 

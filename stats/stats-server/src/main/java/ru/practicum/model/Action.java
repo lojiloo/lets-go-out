@@ -16,9 +16,8 @@ public class Action {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "app_id")
-    private App app;
+    @Column
+    private String app;
     @Column
     private String uri;
     @Column

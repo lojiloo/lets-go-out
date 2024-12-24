@@ -21,18 +21,19 @@ public class StatsController {
     private final StatsServiceImpl service;
 
     @PostMapping(path = "/hit")
-    @ResponseStatus(value = HttpStatus.CREATED, reason = "Информация сохранена")
+    @ResponseStatus(HttpStatus.CREATED)
     public void saveStats(@RequestBody SaveStatsDto request) {
+        log.info("Пришёл запрос на сохранение статистики: {}, {}, {}", request.getApp(), request.getUri(), request.getIp());
         service.saveStats(request);
     }
 
     @GetMapping(path = "/stats")
-    @ResponseStatus(value = HttpStatus.OK, reason = "Статистика собрана")
+    @ResponseStatus(HttpStatus.OK)
     public List<ReturnStatsDto> getStats(@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime start,
                                          @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime end,
                                          @RequestParam(defaultValue = "", required = false) List<String> uris,
                                          @RequestParam(defaultValue = "false", required = false) boolean unique) {
-
+        log.info("Пришёл запрос на получение статистики: start={}, end={}, uris={}, unique={}", start, end, uris, unique);
         return service.getStats(start, end, uris, unique);
     }
 
