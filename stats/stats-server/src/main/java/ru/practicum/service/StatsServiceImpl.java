@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import ru.practicum.dao.StatsRepository;
+import ru.practicum.dto.QueryResultDto;
 import ru.practicum.dto.ReturnStatsDto;
 import ru.practicum.dto.SaveStatsDto;
 import ru.practicum.model.Action;
@@ -36,23 +37,28 @@ public class StatsServiceImpl implements StatsService {
     @Override
     public List<ReturnStatsDto> getStats(LocalDateTime start, LocalDateTime end, List<String> uris, boolean unique) {
 
+        List<QueryResultDto> statsQueryResult;
         if (unique) {
             if (!uris.isEmpty()) {
                 log.info("Пришёл запрос на получение выборки по уникальным IP. Параметр uris не пуст: {}", uris);
-                return repository.getStatsByTimestampBetweenAndUriInAndIpUnique(start, end, uris);
+                statsQueryResult = repository.getStatsByTimestampBetweenAndUriInAndIpUnique(start, end, uris);
             } else {
                 log.info("Пришёл запрос на получение выборки по уникальным IP. Параметр uris пуст");
-                return repository.getStatsByTimestampBetweenAndIpUnique(start, end);
+                statsQueryResult = repository.getStatsByTimestampBetweenAndIpUnique(start, end);
             }
         } else {
             if (!uris.isEmpty()) {
                 log.info("Пришёл запрос на получение выборки. Параметр uris не пуст: {}", uris);
-                return repository.getStatsByTimestampBetweenAndUriIn(start, end, uris);
+                statsQueryResult = repository.getStatsByTimestampBetweenAndUriIn(start, end, uris);
             } else {
                 log.info("Пришёл запрос на получение выборки. Параметр uris пуст");
-                return repository.getStatsByTimestampBetween(start, end);
+                statsQueryResult = repository.getStatsByTimestampBetween(start, end);
             }
         }
+
+        return statsQueryResult.stream()
+                .map(queryResultDto -> mapper.map(queryResultDto, ReturnStatsDto.class))
+                .toList();
     }
 
 }

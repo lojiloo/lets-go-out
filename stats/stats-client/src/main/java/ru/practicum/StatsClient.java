@@ -1,8 +1,6 @@
 package ru.practicum;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import ru.practicum.dto.ReturnStatsDto;
 import ru.practicum.dto.SaveStatsDto;
@@ -14,32 +12,25 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 
-@Component
 public class StatsClient {
-    private static final String STATS_URI = "http://localhost:9090";
-    protected final WebClient client;
+    protected final WebClient client = WebClient.create();
+    protected final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm:ss");
 
-    @Autowired
-    public StatsClient() {
-        this.client = WebClient.create(STATS_URI);
-    }
-
-    public SaveStatsDto saveStats(SaveStatsDto body) {
-        return client.post()
-                .uri("/hit")
+    public void saveStats(SaveStatsDto body, String path) {
+        client.post()
+                .uri(path + "/hit")
                 .contentType(MediaType.APPLICATION_JSON)
                 .retrieve()
-                .bodyToMono(SaveStatsDto.class)
+                .toBodilessEntity()
                 .block();
     }
 
-    public List<ReturnStatsDto> getStats(LocalDateTime start, LocalDateTime end, List<String> uris, boolean unique) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm:ss");
+    public List<ReturnStatsDto> getStats(LocalDateTime start, LocalDateTime end, List<String> uris, boolean unique, String path) {
         String startEncoded = URLEncoder.encode(start.format(formatter), StandardCharsets.UTF_8);
         String endEncoded = URLEncoder.encode(end.format(formatter), StandardCharsets.UTF_8);
 
         return client.get()
-                .uri(builder -> builder.path("/stats")
+                .uri(builder -> builder.path(path + "/stats")
                         .queryParam("start", startEncoded)
                         .queryParam("end", endEncoded)
                         .queryParamIfPresent("uris", Optional.of(uris))
