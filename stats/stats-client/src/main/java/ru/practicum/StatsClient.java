@@ -1,38 +1,37 @@
 package ru.practicum;
 
-import org.springframework.http.MediaType;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.reactive.function.client.WebClient;
 import ru.practicum.dto.ReturnStatsDto;
 import ru.practicum.dto.SaveStatsDto;
 
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 
 public class StatsClient {
-    protected final WebClient client = WebClient.create();
-    protected final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm:ss");
+    protected final WebClient client;
 
-    public void saveStats(SaveStatsDto body, String path) {
+    @Autowired
+    public StatsClient(String uri) {
+        this.client = WebClient.builder().baseUrl(uri).build();
+    }
+
+    public void saveStats(SaveStatsDto body) {
         client.post()
-                .uri(path + "/hit")
-                .contentType(MediaType.APPLICATION_JSON)
+                .uri("/hit")
+                .bodyValue(body)
                 .retrieve()
                 .toBodilessEntity()
                 .block();
     }
 
-    public List<ReturnStatsDto> getStats(LocalDateTime start, LocalDateTime end, List<String> uris, boolean unique, String path) {
-        String startEncoded = URLEncoder.encode(start.format(formatter), StandardCharsets.UTF_8);
-        String endEncoded = URLEncoder.encode(end.format(formatter), StandardCharsets.UTF_8);
+    public List<ReturnStatsDto> getStats(LocalDateTime start, LocalDateTime end, List<String> uris, boolean unique) {
 
         return client.get()
-                .uri(builder -> builder.path(path + "/stats")
-                        .queryParam("start", startEncoded)
-                        .queryParam("end", endEncoded)
+                .uri(builder -> builder.path("/stats")
+                        .queryParam("start", start)
+                        .queryParam("end", end)
                         .queryParamIfPresent("uris", Optional.of(uris))
                         .queryParam("unique", unique).build())
                 .retrieve()
