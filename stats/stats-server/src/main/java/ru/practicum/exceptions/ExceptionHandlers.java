@@ -14,7 +14,7 @@ public class ExceptionHandlers {
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public Map<String, String> BadRequestHandler(BadRequestException e) {
+    public Map<String, String> badRequestHandler(BadRequestException e) {
         return Map.of("message", e.getMessage(), "thrown: ", e.getThrown().format(formatter));
     }
 }
