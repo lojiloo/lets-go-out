@@ -23,14 +23,14 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 public class PrivateEventsController {
-    private final EventsService service;
+    private final EventsService eventsService;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public EventFullDto addNewEventPrivate(@RequestBody @Valid NewEventDto request,
                                            @PathVariable Integer userId) {
         log.info("PrivateEventsController: пришёл запрос на добавление нового события {} от пользователя {}", request, userId);
-        return service.addNewEventPrivate(request, userId);
+        return eventsService.addNewEventPrivate(request, userId);
     }
 
     @GetMapping
@@ -39,7 +39,7 @@ public class PrivateEventsController {
                                               @RequestParam(required = false, defaultValue = "0") @PositiveOrZero Integer from,
                                               @RequestParam(required = false, defaultValue = "10") @Positive Integer size) {
         log.info("PrivateEventsController: пришёл запрос на получение собственных событий от пользователя {}. Пагинация: from={}, size={}", userId, from, size);
-        return service.getUsersEvents(userId, from, size);
+        return eventsService.getUsersEvents(userId, from, size);
     }
 
     @GetMapping("/{eventId}")
@@ -47,7 +47,7 @@ public class PrivateEventsController {
     public EventFullDto getUsersEventByEventId(@PathVariable Integer userId,
                                                @PathVariable Integer eventId) {
         log.info("PrivateEventsController: пришёл запрос на получение полной информации о событии c id={}, добавленном пользователем {}", userId, eventId);
-        return service.getUsersEventById(userId, eventId);
+        return eventsService.getUsersEventById(userId, eventId);
     }
 
     @GetMapping("/{eventId}/requests")
@@ -55,7 +55,7 @@ public class PrivateEventsController {
     public List<ParticipationRequestDto> getUsersEventRequestsByEventId(@PathVariable Integer userId,
                                                                         @PathVariable Integer eventId) {
         log.info("PrivateEventsController: пришёл запрос на получение ифнормации о запросах на участие в событии с id={} пользователя c id={}", eventId, userId);
-        return service.getUsersEventRequestsByEventId(userId, eventId);
+        return eventsService.getUsersEventRequestsByEventId(userId, eventId);
     }
 
     @PatchMapping("/{eventId}")
@@ -64,7 +64,7 @@ public class PrivateEventsController {
                                                 @PathVariable Integer userId,
                                                 @PathVariable Integer eventId) {
         log.info("PrivateEventsController: пришёл запрос на изменение события c id={} от пользователя с id={}. Тело запроса: {}", eventId, userId, request);
-        return service.updateUsersEventPrivate(request, userId, eventId);
+        return eventsService.updateUsersEventPrivate(request, userId, eventId);
     }
 
     @PatchMapping("/{eventId}/requests")
@@ -73,7 +73,7 @@ public class PrivateEventsController {
                                                                             @PathVariable Integer userId,
                                                                             @PathVariable Integer eventId) {
         log.info("PrivateEventsController: пришёл запрос на изменение статуса заявок с id={} на статус {}", request.getRequestIds(), request.getStatus());
-        return service.updateUsersEventRequestsByEventId(request, userId, eventId);
+        return eventsService.updateUsersEventRequestsByEventId(request, userId, eventId);
     }
 
 }

@@ -14,12 +14,12 @@ import java.util.List;
 @RequestMapping("/admin/users")
 @RequiredArgsConstructor
 public class AdminUsersController {
-    private final UserService service;
+    private final UserService userService;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public UserDto addNewUser(@RequestBody @Valid NewUserDto request) {
-        return service.addNewUser(request);
+        return userService.addNewUser(request);
     }
 
     @GetMapping
@@ -27,12 +27,12 @@ public class AdminUsersController {
     public List<UserDto> getUsers(@RequestParam(required = false) List<Integer> ids,
                                   @RequestParam(required = false, defaultValue = "0") Integer from,
                                   @RequestParam(required = false, defaultValue = "10") Integer size) {
-        return service.getUsers(ids, from, size);
+        return userService.getUsers(ids, from, size);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteUserById(@PathVariable Integer id) {
-        service.deleteUserById(id);
+        userService.deleteUserById(id);
     }
 }

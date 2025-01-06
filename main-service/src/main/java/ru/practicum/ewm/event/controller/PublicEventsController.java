@@ -21,7 +21,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 public class PublicEventsController {
-    private final EventsService service;
+    private final EventsService eventsService;
     private final StatsClient client;
 
     @GetMapping
@@ -42,10 +42,10 @@ public class PublicEventsController {
 
         String uri = request.getRequestURI();
         String ip = request.getRemoteAddr();
-        client.saveStats(new SaveStatsDto("ewm-main-service", uri, ip));
+        client.saveStats(new SaveStatsDto("ewm-main-eventsService", uri, ip));
         log.info("Информация о запросе по uri={} от пользователя с ip={} отправлена в сервис статистики", uri, ip);
 
-        return service.getAllEventsPublic(new EventPublicParamDto(text, categories, paid, rangeStart, rangeEnd, onlyAvailable, sort, from, size));
+        return eventsService.getAllEventsPublic(new EventPublicParamDto(text, categories, paid, rangeStart, rangeEnd, onlyAvailable, sort, from, size));
     }
 
     @GetMapping("/{id}")
@@ -55,9 +55,9 @@ public class PublicEventsController {
 
         String uri = request.getRequestURI();
         String ip = request.getRemoteAddr();
-        client.saveStats(new SaveStatsDto("ewm-main-service", uri, ip));
+        client.saveStats(new SaveStatsDto("ewm-main-eventsService", uri, ip));
         log.info("Информация о запросе по uri={} от пользователя с ip={} отправлена в сервис статистики", uri, ip);
 
-        return service.getEventById(id);
+        return eventsService.getEventById(id);
     }
 }

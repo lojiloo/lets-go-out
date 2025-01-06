@@ -20,41 +20,41 @@ import java.time.LocalDateTime;
 public class Event {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Integer id;
+    private Integer id;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "initiator_id")
-    User initiator;
+    private User initiator;
     @Column
-    String annotation;
+    private String annotation;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")
-    Category category;
+    private Category category;
     @Column
-    String description;
+    private String description;
     @Column(name = "event_date")
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    LocalDateTime eventDate;
+    private LocalDateTime eventDate;
     @Embedded
-    Location location;
+    private Location location;
     @Column
-    Boolean paid;
+    private Boolean paid;
     @Column(name = "participant_limit")
-    Integer participantLimit;
+    private Integer participantLimit;
     @Column(name = "request_moderation")
-    Boolean requestModeration;
+    private Boolean requestModeration;
     @Column
-    String title;
+    private String title;
     @Column(name = "created_on")
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    LocalDateTime createdOn;
+    private LocalDateTime createdOn;
     @Column(name = "published_on")
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    LocalDateTime publishedOn;
+    private LocalDateTime publishedOn;
     @Enumerated(value = EnumType.STRING)
-    State state;
+    private State state;
 
     @Transient
-    int confirmedRequests;
+    private int confirmedRequests;
     @Transient
-    int views;
+    private int views;
 }

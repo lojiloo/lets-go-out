@@ -22,7 +22,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 public class AdminEventsController {
-    private final EventsService service;
+    private final EventsService eventsService;
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
@@ -36,7 +36,7 @@ public class AdminEventsController {
         log.info("AdminEventsController: пришёл запрос на получение всех событий по параметрам: " +
                         "users={}, states={}, categories={}, rangeStart={}, rangeEnd={}, from={}, size={}",
                 users, states, categories, rangeStart, rangeEnd, from, size);
-        return service.getAllEventsAdmin(new EventAdminParamDto(users, states, categories, rangeStart, rangeEnd, from, size));
+        return eventsService.getAllEventsAdmin(new EventAdminParamDto(users, states, categories, rangeStart, rangeEnd, from, size));
     }
 
     @PatchMapping("/{eventId}")
@@ -44,6 +44,6 @@ public class AdminEventsController {
     public EventFullDto updateUsersEventAdmin(@RequestBody @Valid UpdateEventAdminRequest request,
                                               @PathVariable Integer eventId) {
         log.info("AdminEventsController: пришёл запрос на обновление события с id={}: {}", eventId, request);
-        return service.updateUsersEventAdmin(request, eventId);
+        return eventsService.updateUsersEventAdmin(request, eventId);
     }
 }

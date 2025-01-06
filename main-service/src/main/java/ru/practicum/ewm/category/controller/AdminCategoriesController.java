@@ -14,20 +14,20 @@ import ru.practicum.ewm.category.service.CategoriesService;
 @RequiredArgsConstructor
 @Slf4j
 public class AdminCategoriesController {
-    private final CategoriesService service;
+    private final CategoriesService categoriesService;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public CategoryDto addNewCategory(@RequestBody @Valid NewCategoryDto request) {
         log.info("AdminCategoriesController: пришёл запрос на добавление новой категории: {}", request.getName());
-        return service.addNewCategory(request);
+        return categoriesService.addNewCategory(request);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteCategory(@PathVariable Integer id) {
         log.info("AdminCategoriesController: пришёл запрос на удаление категории с id={}", id);
-        service.deleteCategory(id);
+        categoriesService.deleteCategory(id);
     }
 
     @PatchMapping("/{id}")
@@ -35,6 +35,6 @@ public class AdminCategoriesController {
     public CategoryDto updateCategory(@RequestBody @Valid CategoryDto request,
                                       @PathVariable Integer id) {
         log.info("AdminCategoriesController: пришёл запрос на обновление категории c id={}: {}", id, request);
-        return service.updateCategory(request, id);
+        return categoriesService.updateCategory(request, id);
     }
 }

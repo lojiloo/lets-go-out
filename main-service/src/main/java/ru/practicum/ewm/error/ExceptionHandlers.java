@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ru.practicum.ewm.error.exceptions.BadRequestException;
 import ru.practicum.ewm.error.exceptions.ConditionsViolationException;
-import ru.practicum.ewm.error.exceptions.DataIntegrityViolationException;
+import ru.practicum.ewm.error.exceptions.EntityExistsException;
 import ru.practicum.ewm.error.exceptions.NotFoundException;
 
 import java.time.LocalDateTime;
@@ -15,7 +15,7 @@ import java.util.Arrays;
 
 @RestControllerAdvice
 public class ExceptionHandlers {
-    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     @ExceptionHandler
     @ResponseStatus(value = HttpStatus.NOT_FOUND)
@@ -39,7 +39,7 @@ public class ExceptionHandlers {
 
     @ExceptionHandler
     @ResponseStatus(value = HttpStatus.CONFLICT)
-    public ApiError dataIntegrityViolationHandler(DataIntegrityViolationException e) {
+    public ApiError entityExistsHandler(EntityExistsException e) {
         return new ApiError(Arrays.asList(e.getStackTrace()),
                 e.getMessage(),
                 "Integrity constraint has been violated.",

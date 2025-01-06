@@ -14,26 +14,26 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 public class PrivateRequestController {
-    private final RequestServiceImpl service;
+    private final RequestServiceImpl requestService;
 
     @PostMapping("/requests")
     @ResponseStatus(HttpStatus.CREATED)
     public ParticipationRequestDto sendParticipationRequest(@PathVariable Integer userId,
                                                             @RequestParam Integer eventId) {
         log.info("PrivateRequestController: пришёл запрос от пользователя с id={} на участие в событии id={}", userId, eventId);
-        return service.sendParticipationRequest(userId, eventId);
+        return requestService.sendParticipationRequest(userId, eventId);
     }
 
     @GetMapping("/requests")
     @ResponseStatus(HttpStatus.OK)
     public List<ParticipationRequestDto> getAllUsersRequestsById(@PathVariable Integer userId) {
-        return service.getAllUsersRequestsById(userId);
+        return requestService.getAllUsersRequestsById(userId);
     }
 
     @PatchMapping("/requests/{requestId}/cancel")
     @ResponseStatus(HttpStatus.OK)
     public ParticipationRequestDto cancelParticipationRequest(@PathVariable Integer userId,
                                                               @PathVariable Integer requestId) {
-        return service.cancelParticipationRequest(userId, requestId);
+        return requestService.cancelParticipationRequest(userId, requestId);
     }
 }

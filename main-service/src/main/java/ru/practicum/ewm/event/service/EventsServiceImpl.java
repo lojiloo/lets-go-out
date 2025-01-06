@@ -46,11 +46,12 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Slf4j
 public class EventsServiceImpl implements EventsService {
+    public static final String SORT_BY_VIEWS_PROPERTY = "views";
+    public static final String SORT_BY_DATE_PROPERTY = "eventDate";
+    public static final Integer VIEWS_ANALYSIS_MONTHS = 1;
     private final StatsClient client;
-
     private final EventsConverter eventsConverter = new EventsConverter();
     private final RequestsConverter requestsConverter = new RequestsConverter();
-
     private final EventsRepository eventsRepository;
     private final RequestsRepository requestsRepository;
     private final CategoriesRepository categoriesRepository;
@@ -88,7 +89,7 @@ public class EventsServiceImpl implements EventsService {
                 .build();
 
         eventsRepository.save(event);
-        log.info("Событие сохранено в базу данных: {}", event);
+        log.info("Создано новое событие с id={}: {}", event.getId(), event);
 
         return eventsConverter.toFullDto(event);
     }
@@ -127,7 +128,7 @@ public class EventsServiceImpl implements EventsService {
         List<Event> events = (predicate != null)
                 ? eventsRepository.findAll(predicate, pageable).stream().collect(Collectors.toList()) : eventsRepository.findAll(pageable).stream().collect(Collectors.toList());
 
-        log.info("По заданным параметрам найдены следующие события, всего {}: {}", events.size(), events);
+        log.info("По заданным параметрам найдено событий: всего {}", events.size());
 
         if (events.isEmpty()) {
             return List.of();
@@ -172,7 +173,7 @@ public class EventsServiceImpl implements EventsService {
         List<Event> events = (predicate != null)
                 ? eventsRepository.findAll(predicate, pageable).stream().collect(Collectors.toList()) : eventsRepository.findAll(pageable).stream().collect(Collectors.toList());
 
-        log.info("По заданным параметрам найдены события, всего {}: {}", events.size(), events);
+        log.info("По заданным параметрам найдено событий: всего {}", events.size());
 
         events = setViewsForEventsList(events);
         setConfirmedRequestsCountForEventList(events);
@@ -392,10 +393,10 @@ public class EventsServiceImpl implements EventsService {
         Sort sort;
         switch (s) {
             case VIEWS:
-                sort = Sort.by("views");
+                sort = Sort.by(SORT_BY_VIEWS_PROPERTY);
                 break;
             default:
-                sort = Sort.by("eventDate");
+                sort = Sort.by(SORT_BY_DATE_PROPERTY);
         }
         return sort;
     }
@@ -420,7 +421,7 @@ public class EventsServiceImpl implements EventsService {
                         .toUriString(), Function.identity()));
 
         List<ReturnStatsDto> stats = client.getStats(
-                LocalDateTime.now().minusMonths(1),
+                LocalDateTime.now().minusMonths(VIEWS_ANALYSIS_MONTHS),
                 LocalDateTime.now(),
                 new ArrayList<>(urisMap.keySet()),
                 true
@@ -439,7 +440,11 @@ public class EventsServiceImpl implements EventsService {
 
     private void setViewsForEvent(Event event) {
         String uri = extractUri(event.getId());
-        List<ReturnStatsDto> stats = client.getStats(LocalDateTime.now().minusMonths(1), LocalDateTime.now(), List.of(uri), true);
+        List<ReturnStatsDto> stats = client.getStats(
+                LocalDateTime.now().minusMonths(VIEWS_ANALYSIS_MONTHS),
+                LocalDateTime.now(),
+                List.of(uri),
+                true);
 
         if (!stats.isEmpty()) {
             Integer views = stats.getFirst().getHits();
@@ -455,9 +460,7 @@ public class EventsServiceImpl implements EventsService {
         }
         long participantLimit = event.getParticipantLimit();
 
-        long confirmedRequestCount = requestsRepository.findAllByEventId(event.getId())
-                .stream()
-                .filter(request -> request.getStatus().equals(Status.CONFIRMED)).count();
+        long confirmedRequestCount = requestsRepository.countByStatusAndEventId(Status.CONFIRMED, event.getId());
 
         return participantLimit - confirmedRequestCount <= 0;
     }
@@ -465,9 +468,8 @@ public class EventsServiceImpl implements EventsService {
     private List<Event> setConfirmedRequestsCountForEventList(List<Event> events) {
         List<Integer> eventsIds = events.stream().map(Event::getId).collect(Collectors.toList());
 
-        Map<Integer, List<Request>> confirmedRequestsByEventId = requestsRepository.findAllByEventIdIn(eventsIds)
+        Map<Integer, List<Request>> confirmedRequestsByEventId = requestsRepository.findByStatusAndEventIdIn(Status.CONFIRMED, eventsIds)
                 .stream()
-                .filter(request -> request.getStatus().equals(Status.CONFIRMED))
                 .collect(Collectors.groupingBy(request -> request.getEvent().getId()));
 
         for (Event event : events) {
@@ -479,10 +481,7 @@ public class EventsServiceImpl implements EventsService {
     }
 
     private void setConfirmedRequestsCountForEvent(Event event) {
-        Integer confirmedRequestsCount = requestsRepository.findAllByEventId(event.getId())
-                .stream()
-                .filter(request -> request.getStatus().equals(Status.CONFIRMED))
-                .toList().size();
+        Integer confirmedRequestsCount = requestsRepository.countByStatusAndEventId(Status.CONFIRMED, event.getId());
 
         event.setConfirmedRequests(confirmedRequestsCount);
     }
@@ -494,16 +493,11 @@ public class EventsServiceImpl implements EventsService {
     }
 
     private EventRequestStatusUpdateResult processConfirmedRequests(Event event, List<Request> requests) {
-        log.info("Сервис начал работу метода processConfirmedRequests");
         List<Request> confirmedRequests = new ArrayList<>();
         List<Request> rejectedRequests = new ArrayList<>();
 
         int limit = event.getParticipantLimit();
-        int confirmedRequestsCount = requestsRepository.findAllByEventId(event.getId())
-                .stream()
-                .filter(request -> request.getStatus().equals(Status.CONFIRMED))
-                .toList()
-                .size();
+        int confirmedRequestsCount = requestsRepository.countByStatusAndEventId(Status.CONFIRMED, event.getId());
 
         for (Request request : requests) {
             if (confirmedRequestsCount >= limit) {
@@ -535,8 +529,8 @@ public class EventsServiceImpl implements EventsService {
                 .map(requestsConverter::toParticipationRequestDto)
                 .collect(Collectors.toList());
 
-        log.info("rejectedRequestsIds: {}", rejectedRequestsIds);
-        log.info("confirmedRequestsIds: {}", confirmedRequestsIds);
+        log.info("Идентификаторы отклонённых запросов на событие с id={}: {}", event.getId(), rejectedRequestsIds);
+        log.info("Идентификаторы принятых запросов на событие с id={}: {}", event.getId(), confirmedRequestsIds);
 
         return new EventRequestStatusUpdateResult(confirmedRequestsDto, rejectedRequestsDto);
     }

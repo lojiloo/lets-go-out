@@ -16,7 +16,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 public class PublicCompilationsController {
-    private final CompilationService service;
+    private final CompilationService compilationService;
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
@@ -24,13 +24,13 @@ public class PublicCompilationsController {
                                                 @RequestParam(required = false, defaultValue = "0") @PositiveOrZero Integer from,
                                                 @RequestParam(required = false, defaultValue = "10") @Positive Integer size) {
         log.info("PublicCompilationsController: получен запрос на получение подборок по параметрам: pinned={}, from={}, size={}", pinned, from, size);
-        return service.getCompilations(pinned, from, size);
+        return compilationService.getCompilations(pinned, from, size);
     }
 
     @GetMapping("/{compId}")
     @ResponseStatus(HttpStatus.OK)
     public CompilationDto getCompilationById(@PathVariable Integer compId) {
         log.info("PublicCompilationsController: получен запрос на получение подборки по id={}", compId);
-        return service.getCompilationById(compId);
+        return compilationService.getCompilationById(compId);
     }
 }

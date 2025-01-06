@@ -15,13 +15,13 @@ import ru.practicum.ewm.compilation.service.CompilationService;
 @RequiredArgsConstructor
 @Slf4j
 public class AdminCompilationsController {
-    private final CompilationService service;
+    private final CompilationService compilationService;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public CompilationDto addNewCompilation(@RequestBody @Valid NewCompilationDto request) {
         log.info("AdminCompilationController: пришёл запрос на добавление новой подборки: {}", request);
-        return service.addNewCompilation(request);
+        return compilationService.addNewCompilation(request);
     }
 
     @PatchMapping("/{compId}")
@@ -29,13 +29,13 @@ public class AdminCompilationsController {
     public CompilationDto updateCompilationById(@RequestBody @Valid UpdateCompilationRequest request,
                                                 @PathVariable Integer compId) {
         log.info("AdminCompilationController: пришёл запрос на обновление подборки с id={}: {}", compId, request);
-        return service.updateCompilationById(request, compId);
+        return compilationService.updateCompilationById(request, compId);
     }
 
     @DeleteMapping("/{compId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteCompilationById(@PathVariable Integer compId) {
         log.info("AdminCompilationController: пришёл запрос на удаление подборки с id={}", compId);
-        service.deleteCompilationById(compId);
+        compilationService.deleteCompilationById(compId);
     }
 }

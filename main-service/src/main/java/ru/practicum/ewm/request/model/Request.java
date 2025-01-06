@@ -20,16 +20,16 @@ import java.time.LocalDateTime;
 public class Request {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Integer id;
+    private Integer id;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "event_id")
-    Event event;
+    private Event event;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
-    User user;
+    private User user;
     @Enumerated(value = EnumType.STRING)
-    Status status;
+    private Status status;
     @Column(name = "created_on")
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    LocalDateTime createdOn;
+    private LocalDateTime createdOn;
 }

@@ -14,7 +14,7 @@ import ru.practicum.ewm.compilation.dto.NewCompilationDto;
 import ru.practicum.ewm.compilation.dto.UpdateCompilationRequest;
 import ru.practicum.ewm.compilation.model.Compilation;
 import ru.practicum.ewm.compilation.repository.CompilationRepository;
-import ru.practicum.ewm.error.exceptions.DataIntegrityViolationException;
+import ru.practicum.ewm.error.exceptions.EntityExistsException;
 import ru.practicum.ewm.error.exceptions.NotFoundException;
 import ru.practicum.ewm.event.dto.EventShortDto;
 import ru.practicum.ewm.event.model.Event;
@@ -39,9 +39,9 @@ public class CompilationServiceImpl implements CompilationService {
 
     @Override
     public CompilationDto addNewCompilation(NewCompilationDto request) {
-        if (compilationRepository.findByTitle(request.getTitle()) != null) {
+        if (compilationRepository.findByTitle(request.getTitle()).isPresent()) {
             log.error("Имя новой подборки должно быть уникально. Подборка с name={} уже существует", request.getTitle());
-            throw new DataIntegrityViolationException("Подборка с таким названием уже существует");
+            throw new EntityExistsException("Подборка с таким названием уже существует");
         }
 
 
@@ -60,9 +60,8 @@ public class CompilationServiceImpl implements CompilationService {
         }
 
         compilationRepository.save(compilation);
+        log.info("Создана подборка с id={}: {}", compilation.getId(), compilation);
         dto.setId(compilation.getId());
-
-        log.info("Сервис подготовил ответ к отправке: {}", dto);
 
         return dto;
     }
@@ -110,8 +109,8 @@ public class CompilationServiceImpl implements CompilationService {
         compilationRepository.save(compilation);
 
         CompilationDto dto = mapper.map(compilation, CompilationDto.class);
-        List<Event> events = compilationRepository.findById(id).get().getEvents();
-        if (events != null && events.isEmpty()) {
+        List<Event> events = compilation.getEvents();
+        if (events != null && !events.isEmpty()) {
             List<EventShortDto> eventsDtos = mapToShortEvents(events);
             dto.setEvents(eventsDtos);
         }
@@ -126,7 +125,7 @@ public class CompilationServiceImpl implements CompilationService {
         );
 
         compilationRepository.delete(compilation);
-        log.info("Подборка с id={} успешно удален", id);
+        log.info("Удалена подборка с id={}", id);
     }
 
     private List<EventShortDto> mapToShortEvents(List<Event> events) {

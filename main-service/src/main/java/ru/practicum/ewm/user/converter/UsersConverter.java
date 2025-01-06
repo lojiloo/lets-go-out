@@ -8,10 +8,10 @@ import ru.practicum.ewm.user.dto.UserShortDto;
 import ru.practicum.ewm.user.model.User;
 
 @Component
-public class UserConverter {
+public class UsersConverter {
     private final ModelMapper mapper;
 
-    public UserConverter() {
+    public UsersConverter() {
         this.mapper = new ModelMapper();
     }
 

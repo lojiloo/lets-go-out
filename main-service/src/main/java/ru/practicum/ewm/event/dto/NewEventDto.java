@@ -2,12 +2,15 @@ package ru.practicum.ewm.event.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.*;
+import lombok.AccessLevel;
 import lombok.Data;
+import lombok.experimental.FieldDefaults;
 import ru.practicum.ewm.event.model.Location;
 
 import java.time.LocalDateTime;
 
 @Data
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class NewEventDto {
     @NotNull
     @NotBlank

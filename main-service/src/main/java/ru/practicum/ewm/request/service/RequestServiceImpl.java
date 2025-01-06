@@ -3,7 +3,8 @@ package ru.practicum.ewm.request.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import ru.practicum.ewm.error.exceptions.DataIntegrityViolationException;
+import ru.practicum.ewm.error.exceptions.ConditionsViolationException;
+import ru.practicum.ewm.error.exceptions.EntityExistsException;
 import ru.practicum.ewm.error.exceptions.NotFoundException;
 import ru.practicum.ewm.event.dto.enums.State;
 import ru.practicum.ewm.event.model.Event;
@@ -23,7 +24,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 public class RequestServiceImpl implements RequestService {
-    private final RequestsConverter converter;
+    private final RequestsConverter requestsConverter;
 
     private final RequestsRepository requestsRepository;
     private final EventsRepository eventsRepository;
@@ -33,7 +34,7 @@ public class RequestServiceImpl implements RequestService {
     public List<ParticipationRequestDto> getAllUsersRequestsById(Integer userId) {
         return requestsRepository.findAllByUserId(userId)
                 .stream()
-                .map(converter::toParticipationRequestDto)
+                .map(requestsConverter::toParticipationRequestDto)
                 .toList();
     }
 
@@ -49,20 +50,20 @@ public class RequestServiceImpl implements RequestService {
 
         if (isRequestAlreadySend(userId, eventId)) {
             log.error("Заявка уже есть в базе данных: повторно подать заявку нельзя");
-            throw new DataIntegrityViolationException("Нельзя подать повторную заявку на событие");
+            throw new EntityExistsException("Нельзя подать повторную заявку на событие");
         }
         if (isParticipantLimitReached(event)) {
             log.error("Лимит участников достигнут; заявка не сохранена в базу данных");
-            throw new DataIntegrityViolationException("К сожалению, требуемое количество участников уже набрано");
+            throw new ConditionsViolationException("К сожалению, требуемое количество участников уже набрано");
         }
 
         if (event.getInitiator().getId().equals(userId)) {
             log.error("Создатель не может подать заявку на собственное событие");
-            throw new DataIntegrityViolationException("Нельзя подать заявку на собственное событие");
+            throw new ConditionsViolationException("Нельзя подать заявку на собственное событие");
         }
         if (!event.getState().equals(State.PUBLISHED)) {
             log.error("Событие не опубликовано; подать заявку можно только на опубликованное событие");
-            throw new DataIntegrityViolationException("Заявка может быть подана только на опубликованное событие");
+            throw new ConditionsViolationException("Заявка может быть подана только на опубликованное событие");
         }
 
         Request request = Request.builder()
@@ -70,7 +71,6 @@ public class RequestServiceImpl implements RequestService {
                 .user(user)
                 .createdOn(LocalDateTime.now())
                 .build();
-        log.info("Создан запрос на участие: {}", request);
 
         if (!event.getRequestModeration() || event.getParticipantLimit() == 0) {
             request.setStatus(Status.CONFIRMED);
@@ -81,9 +81,9 @@ public class RequestServiceImpl implements RequestService {
         }
 
         requestsRepository.save(request);
-        log.info("Заявка сохранена: {}", request);
+        log.info("Создана новая заявка с id={}: {}", event.getId(), event);
 
-        return converter.toParticipationRequestDto(request);
+        return requestsConverter.toParticipationRequestDto(request);
     }
 
     @Override
@@ -96,10 +96,11 @@ public class RequestServiceImpl implements RequestService {
             request.setStatus(Status.CANCELED);
             requestsRepository.save(request);
         } else {
-            throw new DataIntegrityViolationException("Удалить запрос может только его создатель");
+            log.error("Запрос не может быть удалён: пользователь с id={} не является созлдателем запроса", userId);
+            throw new ConditionsViolationException("Удалить запрос может только его создатель");
         }
 
-        return converter.toParticipationRequestDto(request);
+        return requestsConverter.toParticipationRequestDto(request);
     }
 
     private boolean isRequestAlreadySend(int userId, int eventId) {
@@ -112,9 +113,7 @@ public class RequestServiceImpl implements RequestService {
         }
         long participantLimit = event.getParticipantLimit();
 
-        long confirmedRequestCount = requestsRepository.findAllByEventId(event.getId())
-                .stream()
-                .filter(request -> request.getStatus().equals(Status.CONFIRMED)).count();
+        long confirmedRequestCount = requestsRepository.countByStatusAndEventId(Status.CONFIRMED, event.getId());
 
         return participantLimit - confirmedRequestCount <= 0;
     }

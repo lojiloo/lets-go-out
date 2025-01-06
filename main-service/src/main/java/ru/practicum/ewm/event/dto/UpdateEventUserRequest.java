@@ -4,13 +4,16 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
+import lombok.AccessLevel;
 import lombok.Data;
+import lombok.experimental.FieldDefaults;
 import ru.practicum.ewm.event.dto.enums.StateAction;
 import ru.practicum.ewm.event.model.Location;
 
 import java.time.LocalDateTime;
 
 @Data
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class UpdateEventUserRequest {
     @Size(min = 20, max = 2000)
     String annotation;

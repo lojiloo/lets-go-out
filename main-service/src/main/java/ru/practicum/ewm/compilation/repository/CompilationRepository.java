@@ -6,12 +6,13 @@ import org.springframework.stereotype.Repository;
 import ru.practicum.ewm.compilation.model.Compilation;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface CompilationRepository extends JpaRepository<Compilation, Integer> {
 
     List<Compilation> findAllByIsPinned(Boolean isPinned, Pageable pageable);
 
-    Compilation findByTitle(String title);
+    Optional<Compilation> findByTitle(String title);
 
 }
