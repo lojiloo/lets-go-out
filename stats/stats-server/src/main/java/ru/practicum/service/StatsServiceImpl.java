@@ -4,10 +4,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
+import ru.practicum.dao.QueryResultDto;
 import ru.practicum.dao.StatsRepository;
-import ru.practicum.dto.QueryResultDto;
 import ru.practicum.dto.ReturnStatsDto;
 import ru.practicum.dto.SaveStatsDto;
+import ru.practicum.exceptions.BadRequestException;
 import ru.practicum.model.Action;
 
 import java.time.LocalDateTime;
@@ -36,6 +37,10 @@ public class StatsServiceImpl implements StatsService {
 
     @Override
     public List<ReturnStatsDto> getStats(LocalDateTime start, LocalDateTime end, List<String> uris, boolean unique) {
+        if (start.isAfter(end)) {
+            log.error("Запрос содержит некорректные данные: start={} позднее чем end={}", start, end);
+            throw new BadRequestException("Дата начала поиска не может быть позже даты его окончания", LocalDateTime.now());
+        }
 
         List<QueryResultDto> statsQueryResult;
         if (unique) {
