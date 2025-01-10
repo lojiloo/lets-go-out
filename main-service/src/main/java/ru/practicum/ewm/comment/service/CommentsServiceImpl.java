@@ -36,7 +36,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Slf4j
 public class CommentsServiceImpl implements CommentsService {
-    private final Integer COMPLAINTS_COUNT_FOR_REVIEW = 2; //такое маленькое число для удобства тестирования
+    private static final Integer COMPLAINTS_COUNT_FOR_REVIEW = 2; //такое маленькое число для удобства тестирования
 
     private final CommentsRepository commentsRepository;
     private final LikesRepository likesRepository;
