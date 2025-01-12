@@ -10,7 +10,7 @@ import ru.practicum.ewm.comment.model.Comment;
 @Getter
 @ToString
 @AllArgsConstructor
-public class ComplaintsQueryDto {
+public class ComplaintsQueryResult {
     Comment comment;
     Long complaintsCount;
 }
