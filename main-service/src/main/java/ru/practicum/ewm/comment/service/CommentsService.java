@@ -4,15 +4,14 @@ import ru.practicum.ewm.comment.dto.*;
 import ru.practicum.ewm.comment.dto.enums.CommentsSort;
 
 import java.util.List;
-import java.util.UUID;
 
 public interface CommentsService {
 
     CommentFullDto addNewCommentPrivate(NewCommentDto request, Integer userId, Integer eventId);
 
-    CommentFullDto getCommentByIdPublic(UUID comId);
+    CommentFullDto getCommentByIdPublic(String comId);
 
-    CommentAdminDto getCommentByIdAdmin(UUID comId);
+    CommentAdminDto getCommentByIdAdmin(String comId);
 
     List<CommentFullDto> getCommentsByEventPublic(Integer eventId, CommentsSort sort, Integer from, Integer size);
 
@@ -28,13 +27,13 @@ public interface CommentsService {
 
     void enableCommentsOnEvent(Integer userId, Integer eventId);
 
-    void submitCommentForAdminModeration(Integer userId, UUID comId);
+    void submitCommentForAdminModeration(Integer userId, String comId);
 
-    CommentFullDto likeComment(Integer userId, UUID comId);
+    CommentFullDto likeComment(Integer userId, String comId);
 
-    void deleteCommentByIdPrivate(Integer userId, UUID comId);
+    void deleteCommentByIdPrivate(Integer userId, String comId);
 
-    void deleteCommentByIdAdmin(UUID comId);
+    void deleteCommentByIdAdmin(String comId);
 
     void deleteAllUsersCommentsAdmin(Integer userId);
 

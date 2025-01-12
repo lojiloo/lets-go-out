@@ -14,7 +14,6 @@ import ru.practicum.ewm.comment.dto.enums.CommentsSort;
 import ru.practicum.ewm.comment.service.CommentsService;
 
 import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/users/{userId}/comments")
@@ -35,7 +34,7 @@ public class PrivateCommentsController {
     @PostMapping("/{comId}/like")
     @ResponseStatus(HttpStatus.CREATED)
     public CommentFullDto likeComment(@PathVariable Integer userId,
-                                      @PathVariable UUID comId) {
+                                      @PathVariable String comId) {
         log.info("PrivateCommentsController: пользователь с id={} поставил лайк комментарию с id={}", userId, comId);
         return commentsService.likeComment(userId, comId);
     }
@@ -43,7 +42,7 @@ public class PrivateCommentsController {
     @PostMapping("/{comId}/complain")
     @ResponseStatus(HttpStatus.CREATED)
     public void submitCommentForAdminModeration(@PathVariable Integer userId,
-                                                @PathVariable UUID comId) {
+                                                @PathVariable String comId) {
         log.info("PrivateCommentsController: комментарий с id={} нуждается в модерации", comId);
         commentsService.submitCommentForAdminModeration(userId, comId);
     }
@@ -85,7 +84,7 @@ public class PrivateCommentsController {
     @DeleteMapping("/{comId}/delete")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteUsersComment(@PathVariable Integer userId,
-                                   @PathVariable UUID comId) {
+                                   @PathVariable String comId) {
         log.info("PrivateCommentsController: пришёл запрос на удаление собственного комментария с id={} от пользователя с id={}", comId, userId);
         commentsService.deleteCommentByIdPrivate(userId, comId);
     }

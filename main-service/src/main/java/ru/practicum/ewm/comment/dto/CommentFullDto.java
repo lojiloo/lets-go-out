@@ -9,13 +9,12 @@ import ru.practicum.ewm.event.dto.EventShortDto;
 import ru.practicum.ewm.user.dto.UserShortDto;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Data
 @JsonPropertyOrder({"id", "text", "likes", "author", "event", "created_on", "is_updated"})
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class CommentFullDto {
-    private UUID id;
+    private String id;
     private String text;
     private UserShortDto author;
     private EventShortDto event;

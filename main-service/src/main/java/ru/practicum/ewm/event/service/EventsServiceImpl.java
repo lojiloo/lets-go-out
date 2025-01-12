@@ -87,7 +87,7 @@ public class EventsServiceImpl implements EventsService {
                 .title(request.getTitle())
                 .createdOn(LocalDateTime.now())
                 .paid(request.getPaid() != null && request.getPaid())
-                .commentsPermission(request.getCommentsPermission() == null || request.getCommentsPermission())
+                .isCommentPermitted(request.getIsCommentPermitted() == null || request.getIsCommentPermitted())
                 .build();
 
         eventsRepository.save(event);
@@ -270,8 +270,8 @@ public class EventsServiceImpl implements EventsService {
         if (request.getTitle() != null) {
             event.setTitle(request.getTitle());
         }
-        if (request.getCommentsPermission() != null) {
-            event.setCommentsPermission(request.getCommentsPermission());
+        if (request.getIsCommentPermitted() != null) {
+            event.setIsCommentPermitted(request.getIsCommentPermitted());
         }
 
         eventsRepository.save(event);
@@ -329,8 +329,8 @@ public class EventsServiceImpl implements EventsService {
         if (request.getTitle() != null) {
             event.setTitle(request.getTitle());
         }
-        if (request.getCommentsPermission() != null) {
-            event.setCommentsPermission(request.getCommentsPermission());
+        if (request.getIsCommentPermitted() != null) {
+            event.setIsCommentPermitted(request.getIsCommentPermitted());
         }
 
         if (request.getStateAction() != null) {
@@ -389,22 +389,22 @@ public class EventsServiceImpl implements EventsService {
 
     @Override
     public void disableCommentsOnEvent(Event event) throws BadRequestException {
-        if (!event.getCommentsPermission()) {
+        if (!event.getIsCommentPermitted()) {
             throw new BadRequestException("Комментарии для данного события уже отключены");
         }
 
-        event.setCommentsPermission(false);
+        event.setIsCommentPermitted(false);
         eventsRepository.save(event);
         log.info("Комментирование события с id={} отключено", event.getId());
     }
 
     @Override
     public void enableCommentsOnEvent(Event event) throws BadRequestException {
-        if (event.getCommentsPermission()) {
+        if (event.getIsCommentPermitted()) {
             throw new BadRequestException("Комментарии для данного события уже разрешены");
         }
 
-        event.setCommentsPermission(true);
+        event.setIsCommentPermitted(true);
         eventsRepository.save(event);
         log.info("Комментирование события с id={} вновь доступно", event.getId());
     }

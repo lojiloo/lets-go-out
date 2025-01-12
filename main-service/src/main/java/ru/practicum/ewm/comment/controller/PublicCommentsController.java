@@ -9,7 +9,6 @@ import ru.practicum.ewm.comment.dto.enums.CommentsSort;
 import ru.practicum.ewm.comment.service.CommentsService;
 
 import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/comments")
@@ -29,7 +28,7 @@ public class PublicCommentsController {
 
     @GetMapping("/{comId}")
     @ResponseStatus(HttpStatus.OK)
-    public CommentFullDto getCommentById(@PathVariable UUID comId) {
+    public CommentFullDto getCommentById(@PathVariable String comId) {
         log.info("PrivateCommentsController: пришёл запрос на получение комментария с id={}", comId);
         return commentsService.getCommentByIdPublic(comId);
     }

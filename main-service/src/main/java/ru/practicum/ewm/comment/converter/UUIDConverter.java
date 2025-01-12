@@ -6,14 +6,14 @@ import jakarta.persistence.Converter;
 import java.util.UUID;
 
 @Converter
-public class UUIDConverter implements AttributeConverter<UUID, String> {
+public class UUIDConverter implements AttributeConverter<String, UUID> {
     @Override
-    public String convertToDatabaseColumn(UUID uuid) {
-        return uuid.toString();
+    public UUID convertToDatabaseColumn(String s) {
+        return UUID.fromString(s);
     }
 
     @Override
-    public UUID convertToEntityAttribute(String s) {
-        return UUID.fromString(s);
+    public String convertToEntityAttribute(UUID u) {
+        return u.toString();
     }
 }

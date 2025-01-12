@@ -7,40 +7,39 @@ import ru.practicum.ewm.comment.model.Like;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 public interface LikesRepository extends JpaRepository<Like, Integer> {
 
     @Query("""
-            select new ru.practicum.ewm.comment.repository.likes.LikesQueryDto(l.comment, count(l.user.id)) from Like l
+            select new ru.practicum.ewm.comment.repository.likes.LikesQueryResult(l.comment, count(l.user.id)) from Like l
             where l.comment.author.id = :userId
             group by l.comment
             order by count(l.user.id) DESC
             """)
-    List<LikesQueryDto> findAllByCommentAuthorIdOrderByLikes(int userId, Pageable pageable);
+    List<LikesQueryResult> findAllByCommentAuthorIdOrderByLikes(int userId, Pageable pageable);
 
     @Query("""
-            select new ru.practicum.ewm.comment.repository.likes.LikesQueryDto(l.comment, count(l.comment.event.id)) from Like l
+            select new ru.practicum.ewm.comment.repository.likes.LikesQueryResult(l.comment, count(l.comment.event.id)) from Like l
             where l.comment.event.id = :eventId
             group by l.comment
             order by count(l.comment.event.id) DESC
             """)
-    List<LikesQueryDto> findAllByCommentEventIdOrderByLikes(int eventId, Pageable pageable);
+    List<LikesQueryResult> findAllByCommentEventIdOrderByLikes(int eventId, Pageable pageable);
 
     @Query("""
-            select new ru.practicum.ewm.comment.repository.likes.LikesQueryDto(l.comment, count(l.user.id)) from Like l
+            select new ru.practicum.ewm.comment.repository.likes.LikesQueryResult(l.comment, count(l.user.id)) from Like l
             where l.comment.id in :ids
             group by l.comment
             """)
-    List<LikesQueryDto> findAllByCommentIdIn(List<UUID> ids);
+    List<LikesQueryResult> findAllByCommentIdIn(List<String> ids);
 
     @Query("""
-            select new ru.practicum.ewm.comment.repository.likes.LikesQueryDto(l.comment, count(l.user.id)) from Like l
+            select new ru.practicum.ewm.comment.repository.likes.LikesQueryResult(l.comment, count(l.user.id)) from Like l
             where l.comment.id = :id
             group by l.comment
             """)
-    Optional<LikesQueryDto> findByCommentId(UUID id);
+    Optional<LikesQueryResult> findByCommentId(String id);
 
-    Optional<Like> findByUserIdAndCommentId(int userId, UUID comId);
+    Optional<Like> findByUserIdAndCommentId(int userId, String comId);
 
 }

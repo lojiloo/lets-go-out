@@ -28,5 +28,5 @@ public class UpdateEventUserRequest {
     private StateAction stateAction;
     @Size(min = 3, max = 120)
     private String title;
-    private Boolean commentsPermission;
+    private Boolean isCommentPermitted;
 }

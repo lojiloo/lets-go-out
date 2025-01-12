@@ -6,9 +6,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import ru.practicum.ewm.comment.model.Comment;
 
 import java.util.List;
-import java.util.UUID;
 
-public interface CommentsRepository extends JpaRepository<Comment, UUID> {
+public interface CommentsRepository extends JpaRepository<Comment, String> {
 
     List<Comment> findAllByAuthorId(int userId, PageRequest pageRequest);
 
@@ -22,6 +21,6 @@ public interface CommentsRepository extends JpaRepository<Comment, UUID> {
 
     List<Comment> findAllByEventIdOrderByCreatedOn(int eventId, Pageable pageable);
 
-    List<Comment> findAllByIdInOrderByCreatedOnDesc(List<UUID> ids);
+    List<Comment> findAllByIdInOrderByCreatedOnDesc(List<String> ids);
 
 }

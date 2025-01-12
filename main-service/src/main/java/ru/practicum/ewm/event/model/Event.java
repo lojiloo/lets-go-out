@@ -53,7 +53,7 @@ public class Event {
     @Enumerated(value = EnumType.STRING)
     private State state;
     @Column(name = "comments_permission")
-    private Boolean commentsPermission;
+    private Boolean isCommentPermitted;
 
     @Transient
     private int confirmedRequests;

@@ -13,10 +13,10 @@ import ru.practicum.ewm.comment.model.Complaint;
 import ru.practicum.ewm.comment.model.Like;
 import ru.practicum.ewm.comment.model.Review;
 import ru.practicum.ewm.comment.repository.comments.CommentsRepository;
-import ru.practicum.ewm.comment.repository.complaints.ComplaintsQueryDto;
+import ru.practicum.ewm.comment.repository.complaints.ComplaintsQueryResult;
 import ru.practicum.ewm.comment.repository.complaints.ComplaintsRepository;
 import ru.practicum.ewm.comment.repository.complaints.ReviewRepository;
-import ru.practicum.ewm.comment.repository.likes.LikesQueryDto;
+import ru.practicum.ewm.comment.repository.likes.LikesQueryResult;
 import ru.practicum.ewm.comment.repository.likes.LikesRepository;
 import ru.practicum.ewm.error.exceptions.BadRequestException;
 import ru.practicum.ewm.error.exceptions.ConditionsViolationException;
@@ -29,7 +29,10 @@ import ru.practicum.ewm.user.model.User;
 import ru.practicum.ewm.user.service.UserService;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -51,11 +54,11 @@ public class CommentsServiceImpl implements CommentsService {
     @Override
     public CommentFullDto addNewCommentPrivate(NewCommentDto request, Integer userId, Integer eventId) {
         Event event = eventsService.findById(eventId);
-        if (!event.getState().equals(State.PUBLISHED)) {
+        if (event.getState() != State.PUBLISHED) {
             log.error("Оставить комментарий можно только для опубликованного события: событие с id={}, state={}", eventId, event.getState());
             throw new ConditionsViolationException("It is possible to comment only published events");
         }
-        if (!event.getCommentsPermission()) {
+        if (!event.getIsCommentPermitted()) {
             log.error("Инициатор события ограничил возможность комментирования");
             throw new ConditionsViolationException("Comments are not permitted by initiator");
         }
@@ -76,7 +79,7 @@ public class CommentsServiceImpl implements CommentsService {
     }
 
     @Override
-    public CommentFullDto getCommentByIdPublic(UUID comId) {
+    public CommentFullDto getCommentByIdPublic(String comId) {
         Comment comment = findById(comId);
         setLikes(comment);
 
@@ -84,7 +87,7 @@ public class CommentsServiceImpl implements CommentsService {
     }
 
     @Override
-    public CommentAdminDto getCommentByIdAdmin(UUID comId) {
+    public CommentAdminDto getCommentByIdAdmin(String comId) {
         Comment comment = findById(comId);
         setLikes(comment);
         setComplaints(comment);
@@ -227,7 +230,7 @@ public class CommentsServiceImpl implements CommentsService {
     }
 
     @Override
-    public void submitCommentForAdminModeration(Integer userId, UUID comId) {
+    public void submitCommentForAdminModeration(Integer userId, String comId) {
         Optional<Complaint> maybeComplaint = complaintsRepository.findByUserIdAndCommentId(userId, comId);
 
         if (maybeComplaint.isPresent()) {
@@ -257,7 +260,7 @@ public class CommentsServiceImpl implements CommentsService {
     }
 
     @Override
-    public CommentFullDto likeComment(Integer userId, UUID comId) {
+    public CommentFullDto likeComment(Integer userId, String comId) {
         Comment comment = findById(comId);
 
         Optional<Like> maybeLike = likesRepository.findByUserIdAndCommentId(userId, comId);
@@ -275,7 +278,7 @@ public class CommentsServiceImpl implements CommentsService {
     }
 
     @Override
-    public void deleteCommentByIdPrivate(Integer userId, UUID comId) {
+    public void deleteCommentByIdPrivate(Integer userId, String comId) {
         Comment comment = findById(comId);
         if (!comment.getAuthor().getId().equals(userId)) {
             log.error("Удалить комментарий может только его создатель: пользователь с id={} не является автором комментария с id={}", userId, comId);
@@ -286,7 +289,7 @@ public class CommentsServiceImpl implements CommentsService {
     }
 
     @Override
-    public void deleteCommentByIdAdmin(UUID comId) {
+    public void deleteCommentByIdAdmin(String comId) {
         Comment comment = findById(comId);
         commentsRepository.delete(comment);
     }
@@ -297,7 +300,7 @@ public class CommentsServiceImpl implements CommentsService {
         commentsRepository.deleteAll(comments);
     }
 
-    private Comment findById(UUID comId) {
+    private Comment findById(String comId) {
         return commentsRepository.findById(comId).orElseThrow(
                 () -> new NotFoundException(String.format("Comment with id=%s was not found", comId))
         );
@@ -326,7 +329,7 @@ public class CommentsServiceImpl implements CommentsService {
         if (remainSize > 0) {
             Pageable remainPageable = PageRequest.of(0, remainSize);
 
-            List<UUID> ids = likedCommentsTop.stream().map(Comment::getId).toList();
+            List<String> ids = likedCommentsTop.stream().map(Comment::getId).toList();
             commentsRepository.findAllByAuthorIdOrderByCreatedOnDesc(userId, remainPageable)
                     .stream()
                     .filter(comment -> !ids.contains(comment.getId()))
@@ -360,7 +363,7 @@ public class CommentsServiceImpl implements CommentsService {
         if (remainSize > 0) {
             Pageable remainPageable = PageRequest.of(0, remainSize);
 
-            List<UUID> ids = likedCommentsTop.stream().map(Comment::getId).toList();
+            List<String> ids = likedCommentsTop.stream().map(Comment::getId).toList();
             commentsRepository.findAllByEventIdOrderByCreatedOnDesc(eventId, remainPageable)
                     .stream()
                     .filter(comment -> !ids.contains(comment.getId()))
@@ -372,13 +375,13 @@ public class CommentsServiceImpl implements CommentsService {
     }
 
     private List<Comment> setLikes(List<Comment> comments) {
-        ArrayList<UUID> ids = comments.stream().map(Comment::getId).collect(Collectors.toCollection(ArrayList::new));
-        Map<UUID, Long> likesForComments = likesRepository.findAllByCommentIdIn(ids)
+        ArrayList<String> ids = comments.stream().map(Comment::getId).collect(Collectors.toCollection(ArrayList::new));
+        Map<String, Long> likesForComments = likesRepository.findAllByCommentIdIn(ids)
                 .stream()
-                .collect(Collectors.toMap(like -> like.getComment().getId(), LikesQueryDto::getLikesCount));
+                .collect(Collectors.toMap(like -> like.getComment().getId(), LikesQueryResult::getLikesCount));
 
         for (Comment comment : comments) {
-            UUID id = comment.getId();
+            String id = comment.getId();
             comment.setLikes(likesForComments.getOrDefault(id, 0L));
         }
 
@@ -386,7 +389,7 @@ public class CommentsServiceImpl implements CommentsService {
     }
 
     private Comment setLikes(Comment comment) {
-        Optional<LikesQueryDto> maybeLikes = likesRepository.findByCommentId(comment.getId());
+        Optional<LikesQueryResult> maybeLikes = likesRepository.findByCommentId(comment.getId());
         if (maybeLikes.isPresent()) {
             Long likesCount = maybeLikes.get().getLikesCount();
             comment.setLikes(likesCount);
@@ -398,13 +401,13 @@ public class CommentsServiceImpl implements CommentsService {
     }
 
     private List<Comment> setComplaints(List<Comment> comments) {
-        ArrayList<UUID> ids = comments.stream().map(Comment::getId).collect(Collectors.toCollection(ArrayList::new));
-        Map<UUID, Long> complaintsForComments = complaintsRepository.findAllByCommentIdIn(ids)
+        ArrayList<String> ids = comments.stream().map(Comment::getId).collect(Collectors.toCollection(ArrayList::new));
+        Map<String, Long> complaintsForComments = complaintsRepository.findAllByCommentIdIn(ids)
                 .stream()
-                .collect(Collectors.toMap(comp -> comp.getComment().getId(), ComplaintsQueryDto::getComplaintsCount));
+                .collect(Collectors.toMap(comp -> comp.getComment().getId(), ComplaintsQueryResult::getComplaintsCount));
 
         for (Comment comment : comments) {
-            UUID id = comment.getId();
+            String id = comment.getId();
             comment.setComplaints(complaintsForComments.getOrDefault(id, 0L));
         }
 
@@ -412,7 +415,7 @@ public class CommentsServiceImpl implements CommentsService {
     }
 
     private Comment setComplaints(Comment comment) {
-        Optional<ComplaintsQueryDto> maybeComplaints = complaintsRepository.findByCommentId(comment.getId());
+        Optional<ComplaintsQueryResult> maybeComplaints = complaintsRepository.findByCommentId(comment.getId());
         if (maybeComplaints.isPresent()) {
             Long complaintsCount = maybeComplaints.get().getComplaintsCount();
             comment.setComplaints(complaintsCount);

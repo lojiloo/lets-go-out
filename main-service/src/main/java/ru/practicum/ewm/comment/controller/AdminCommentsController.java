@@ -8,7 +8,6 @@ import ru.practicum.ewm.comment.dto.CommentAdminDto;
 import ru.practicum.ewm.comment.service.CommentsService;
 
 import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/admin/comments")
@@ -27,7 +26,7 @@ public class AdminCommentsController {
 
     @GetMapping("/{comId}")
     @ResponseStatus(HttpStatus.OK)
-    public CommentAdminDto getCommentById(@PathVariable UUID comId) {
+    public CommentAdminDto getCommentById(@PathVariable String comId) {
         log.info("PrivateCommentsController: пришёл запрос на получение комментария с id={}", comId);
         return commentsService.getCommentByIdAdmin(comId);
     }
@@ -43,7 +42,7 @@ public class AdminCommentsController {
 
     @DeleteMapping("/{comId}/delete")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteCommentByIdAdmin(@PathVariable UUID comId) {
+    public void deleteCommentByIdAdmin(@PathVariable String comId) {
         log.info("AdminCommentsController: пришёл запрос на удаление комментария с id={}", comId);
         commentsService.deleteCommentByIdAdmin(comId);
     }

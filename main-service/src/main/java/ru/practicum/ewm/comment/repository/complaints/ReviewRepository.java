@@ -7,11 +7,10 @@ import ru.practicum.ewm.comment.model.Review;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 public interface ReviewRepository extends JpaRepository<Review, Integer> {
 
-    Optional<Review> findByCommentId(UUID comId);
+    Optional<Review> findByCommentId(String comId);
 
     @Query("""
             select r from Review r order by r.complaintsCount DESC

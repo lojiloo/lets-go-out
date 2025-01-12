@@ -8,13 +8,12 @@ import ru.practicum.ewm.event.dto.EventShortDto;
 import ru.practicum.ewm.user.dto.UserShortDto;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Data
 @JsonPropertyOrder({"comment_id", "text", "likes", "complaints", "author", "event", "created_on", "is_updated"})
 public class CommentAdminDto {
     @JsonProperty("comment_id")
-    private UUID commentId;
+    private String commentId;
     private String text;
     private UserShortDto author;
     private EventShortDto event;
